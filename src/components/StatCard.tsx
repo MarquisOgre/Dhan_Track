@@ -7,11 +7,7 @@ type StatCardProps = {
 
 export function StatCard({ type, amount }: StatCardProps) {
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(value);
+    return '₹' + value.toLocaleString('en-IN', { minimumFractionDigits: 2 });
   };
 
   const isIncome = type === 'income';

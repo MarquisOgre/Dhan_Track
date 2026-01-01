@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { categories, TransactionType, Transaction, Category } from '@/types/transaction';
 
 type AddTransactionModalProps = {
@@ -11,11 +12,21 @@ type AddTransactionModalProps = {
   onAdd: (transaction: Omit<Transaction, 'id'>) => void;
 };
 
+const months = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+const currentYear = new Date().getFullYear();
+const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
+
 export function AddTransactionModal({ open, onOpenChange, onAdd }: AddTransactionModalProps) {
   const [type, setType] = useState<TransactionType>('expense');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category>(categories[1]);
+  const [month, setMonth] = useState(new Date().getMonth().toString());
+  const [year, setYear] = useState(currentYear.toString());
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,12 +35,14 @@ export function AddTransactionModal({ open, onOpenChange, onAdd }: AddTransactio
     if (isNaN(parsedAmount) || parsedAmount <= 0) return;
     if (!description.trim()) return;
 
+    const date = new Date(parseInt(year), parseInt(month), 15);
+
     onAdd({
       type,
       amount: parsedAmount,
       description: description.trim(),
       category: selectedCategory,
-      date: new Date(),
+      date,
     });
 
     // Reset form
@@ -37,6 +50,8 @@ export function AddTransactionModal({ open, onOpenChange, onAdd }: AddTransactio
     setDescription('');
     setSelectedCategory(categories[1]);
     setType('expense');
+    setMonth(new Date().getMonth().toString());
+    setYear(currentYear.toString());
     onOpenChange(false);
   };
 
@@ -92,7 +107,7 @@ export function AddTransactionModal({ open, onOpenChange, onAdd }: AddTransactio
           <div className="space-y-2">
             <Label htmlFor="amount">Amount</Label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">$</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">₹</span>
               <Input
                 id="amount"
                 type="number"
@@ -140,6 +155,38 @@ export function AddTransactionModal({ open, onOpenChange, onAdd }: AddTransactio
                   </span>
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Month/Year Selector */}
+          <div className="space-y-2">
+            <Label>Month & Year</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <Select value={month} onValueChange={setMonth}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Month" />
+                </SelectTrigger>
+                <SelectContent>
+                  {months.map((m, index) => (
+                    <SelectItem key={m} value={index.toString()}>
+                      {m}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Select value={year} onValueChange={setYear}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map(y => (
+                    <SelectItem key={y} value={y.toString()}>
+                      {y}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
