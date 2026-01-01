@@ -59,10 +59,16 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
-            <Wallet className="w-8 h-8 text-primary-foreground" />
+        <div className="text-center w-full">
+          {/* Logo without background */}
+          <div className="flex justify-center mb-4">
+            <img
+              src="/logo.png"       // logo in public folder
+              alt="DhanTrack Logo"
+              className="w-24 h-24" // increased size
+            />
           </div>
+
           <h1 className="font-display font-bold text-2xl">ExpenseTracker</h1>
           <p className="text-muted-foreground mt-2">
             {isLogin ? 'Welcome back!' : 'Create your account'}

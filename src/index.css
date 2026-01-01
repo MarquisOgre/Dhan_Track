@@ -1,8 +1,12 @@
+/* 1️⃣ Import Google Fonts first */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+/* 2️⃣ Tailwind directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+/* 3️⃣ Custom CSS layers */
 
 @layer base {
   :root {
