@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Wallet, LogOut, Settings } from 'lucide-react';
+import { Wallet, LogOut, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSupabaseTransactions, Transaction } from '@/hooks/useSupabaseTransactions';
-import { BalanceCard } from '@/components/BalanceCard';
-import { StatCard } from '@/components/StatCard';
+import { QuickStatsRow } from '@/components/QuickStatsRow';
 import { TransactionListWithEdit } from '@/components/TransactionListWithEdit';
 import { SpendingChart } from '@/components/SpendingChart';
 import { AddTransactionModalSupabase } from '@/components/AddTransactionModalSupabase';
@@ -63,7 +62,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-8">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b border-border/50">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -104,22 +103,22 @@ const Index = () => {
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {loading ? (
           <div className="space-y-4">
-            <Skeleton className="h-32 w-full rounded-2xl" />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-4 gap-3">
+              <Skeleton className="h-24 w-full rounded-2xl" />
+              <Skeleton className="h-24 w-full rounded-2xl" />
               <Skeleton className="h-24 w-full rounded-2xl" />
               <Skeleton className="h-24 w-full rounded-2xl" />
             </div>
           </div>
         ) : (
           <>
-            {/* Balance Card */}
-            <BalanceCard balance={totalBalance} />
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 gap-4">
-              <StatCard type="income" amount={totalIncome} />
-              <StatCard type="expense" amount={totalExpenses} />
-            </div>
+            {/* Quick Stats Row - Balance, Income, Expense, Add Entry */}
+            <QuickStatsRow
+              balance={totalBalance}
+              income={totalIncome}
+              expenses={totalExpenses}
+              onAddClick={() => setModalOpen(true)}
+            />
 
             {/* Budget Progress */}
             {budgetProgress.length > 0 && (
@@ -154,15 +153,6 @@ const Index = () => {
           </>
         )}
       </main>
-
-      {/* FAB */}
-      <button
-        onClick={() => setModalOpen(true)}
-        className="btn-fab"
-        aria-label="Add transaction"
-      >
-        <Plus className="w-6 h-6" />
-      </button>
 
       {/* Add Transaction Modal */}
       <AddTransactionModalSupabase
