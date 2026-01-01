@@ -12,6 +12,7 @@ import { BudgetSettingsModal } from '@/components/BudgetSettingsModal';
 import { BudgetProgress } from '@/components/BudgetProgress';
 import { MonthYearFilter } from '@/components/MonthYearFilter';
 import { ExportButton } from '@/components/ExportButton';
+import { RecurringExpensesList } from '@/components/RecurringExpensesList';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -24,6 +25,7 @@ const Index = () => {
 
   const {
     transactions,
+    allTransactions,
     categories,
     loading,
     addTransaction,
@@ -38,6 +40,9 @@ const Index = () => {
     filterPeriod,
     setFilterPeriod,
   } = useSupabaseTransactions();
+
+  const currentMonth = filterPeriod === 'all' ? new Date().getMonth() : filterPeriod.month;
+  const currentYear = filterPeriod === 'all' ? new Date().getFullYear() : filterPeriod.year;
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -119,6 +124,16 @@ const Index = () => {
               expenses={totalExpenses}
               onAddClick={() => setModalOpen(true)}
             />
+
+            {/* Recurring Expenses */}
+            <section className="card-elevated p-6 animate-slide-up" style={{ animationDelay: '50ms' }}>
+              <h2 className="font-display font-semibold text-lg mb-4">Recurring Expenses</h2>
+              <RecurringExpensesList 
+                transactions={allTransactions}
+                currentMonth={currentMonth}
+                currentYear={currentYear}
+              />
+            </section>
 
             {/* Budget Progress */}
             {budgetProgress.length > 0 && (

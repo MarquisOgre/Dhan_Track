@@ -14,7 +14,7 @@ export function QuickStatsRow({ balance, income, expenses, onAddClick }: QuickSt
   };
 
   return (
-    <div className="grid grid-cols-4 gap-3 animate-fade-in">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-fade-in">
       {/* Balance */}
       <div className="card-elevated p-4 flex flex-col">
         <div className="flex items-center gap-2 mb-2">
