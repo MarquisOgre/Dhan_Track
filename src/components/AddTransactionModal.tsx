@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { categories, TransactionType, Transaction, Category } from '@/types/transaction';
+import { categories, TransactionType, Transaction, Category, RecurrenceType, recurrenceOptions } from '@/types/transaction';
 
 type AddTransactionModalProps = {
   open: boolean;
@@ -27,6 +27,7 @@ export function AddTransactionModal({ open, onOpenChange, onAdd }: AddTransactio
   const [selectedCategory, setSelectedCategory] = useState<Category>(categories[1]);
   const [month, setMonth] = useState(new Date().getMonth().toString());
   const [year, setYear] = useState(currentYear.toString());
+  const [recurrence, setRecurrence] = useState<RecurrenceType>('one-time');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +44,7 @@ export function AddTransactionModal({ open, onOpenChange, onAdd }: AddTransactio
       description: description.trim(),
       category: selectedCategory,
       date,
+      recurrence,
     });
 
     // Reset form
@@ -52,6 +54,7 @@ export function AddTransactionModal({ open, onOpenChange, onAdd }: AddTransactio
     setType('expense');
     setMonth(new Date().getMonth().toString());
     setYear(currentYear.toString());
+    setRecurrence('one-time');
     onOpenChange(false);
   };
 
@@ -65,12 +68,12 @@ export function AddTransactionModal({ open, onOpenChange, onAdd }: AddTransactio
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display text-xl">Add Transaction</DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Type Toggle */}
           <div className="flex gap-2 p-1 bg-muted rounded-xl">
             <button
@@ -187,6 +190,27 @@ export function AddTransactionModal({ open, onOpenChange, onAdd }: AddTransactio
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          {/* Recurrence */}
+          <div className="space-y-2">
+            <Label>Recurrence</Label>
+            <div className="flex flex-wrap gap-2">
+              {recurrenceOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setRecurrence(option.value)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    recurrence === option.value
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'bg-muted text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
             </div>
           </div>
 
