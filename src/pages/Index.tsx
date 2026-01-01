@@ -6,6 +6,8 @@ import { StatCard } from '@/components/StatCard';
 import { TransactionList } from '@/components/TransactionList';
 import { SpendingChart } from '@/components/SpendingChart';
 import { AddTransactionModal } from '@/components/AddTransactionModal';
+import { BudgetProgress } from '@/components/BudgetProgress';
+import { MonthYearFilter } from '@/components/MonthYearFilter';
 
 const Index = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -17,6 +19,9 @@ const Index = () => {
     totalIncome,
     totalExpenses,
     expensesByCategory,
+    budgetProgress,
+    filterPeriod,
+    setFilterPeriod,
   } = useTransactions();
 
   return (
@@ -33,9 +38,10 @@ const Index = () => {
               <p className="text-xs text-muted-foreground">Manage your finances</p>
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-xs text-muted-foreground">January 2026</p>
-          </div>
+          <MonthYearFilter 
+            filterPeriod={filterPeriod} 
+            onFilterChange={setFilterPeriod} 
+          />
         </div>
       </header>
 
@@ -48,6 +54,14 @@ const Index = () => {
           <StatCard type="income" amount={totalIncome} />
           <StatCard type="expense" amount={totalExpenses} />
         </div>
+
+        {/* Budget Progress */}
+        {budgetProgress.length > 0 && (
+          <section className="card-elevated p-6 animate-slide-up" style={{ animationDelay: '75ms' }}>
+            <h2 className="font-display font-semibold text-lg mb-4">Budget Status</h2>
+            <BudgetProgress data={budgetProgress} />
+          </section>
+        )}
 
         {/* Spending Breakdown */}
         <section className="card-elevated p-6 animate-slide-up" style={{ animationDelay: '100ms' }}>

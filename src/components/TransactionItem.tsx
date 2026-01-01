@@ -1,5 +1,5 @@
 import { Transaction } from '@/types/transaction';
-import { Trash2 } from 'lucide-react';
+import { Trash2, RefreshCw } from 'lucide-react';
 
 type TransactionItemProps = {
   transaction: Transaction;
@@ -21,10 +21,11 @@ export function TransactionItem({ transaction, onDelete }: TransactionItemProps)
     } else if (date.toDateString() === yesterday.toDateString()) {
       return 'Yesterday';
     }
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
   };
 
   const isIncome = transaction.type === 'income';
+  const isRecurring = transaction.recurrence !== 'one-time';
 
   return (
     <div className="transaction-item group">
@@ -35,9 +36,17 @@ export function TransactionItem({ transaction, onDelete }: TransactionItemProps)
         <span>{transaction.category.icon}</span>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-foreground truncate">
-          {transaction.description}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="font-medium text-foreground truncate">
+            {transaction.description}
+          </p>
+          {isRecurring && (
+            <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+              <RefreshCw className="w-3 h-3" />
+              {transaction.recurrence}
+            </span>
+          )}
+        </div>
         <p className="text-sm text-muted-foreground">
           {transaction.category.name} • {formatDate(transaction.date)}
         </p>
