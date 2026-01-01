@@ -7,11 +7,7 @@ type SpendingChartProps = {
 
 export function SpendingChart({ data }: SpendingChartProps) {
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(amount);
+    return '₹' + amount.toLocaleString('en-IN', { minimumFractionDigits: 0 });
   };
 
   const total = data.reduce((sum, item) => sum + item.total, 0);

@@ -8,11 +8,7 @@ type TransactionItemProps = {
 
 export function TransactionItem({ transaction, onDelete }: TransactionItemProps) {
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(amount);
+    return '₹' + amount.toLocaleString('en-IN', { minimumFractionDigits: 2 });
   };
 
   const formatDate = (date: Date) => {
