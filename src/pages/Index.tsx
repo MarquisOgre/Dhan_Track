@@ -70,45 +70,39 @@ const Index = () => {
     <div className="min-h-screen bg-background pb-8">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b border-border/50">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="w-full px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 flex items-center justify-center">
               <img
-                src="/favicon.png" // or /logo.png if that's your favicon
+                src="/favicon.png"
                 alt="DhanTrack Logo"
-                className="w-12 h-12 h-auto"
+                className="w-8 h-8 h-auto"
               />
             </div>
 
-            <div>
-              <h1 className="font-display font-bold text-lg">DhanTrack</h1>
-              <p className="text-xs text-muted-foreground truncate max-w-[150px]">{user.email}</p>
-            </div>
+            <h1 className="font-display font-bold text-xl">
+              DhanTrack
+            </h1>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-3">
             <MonthYearFilter 
               filterPeriod={filterPeriod} 
               onFilterChange={setFilterPeriod} 
             />
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => setBudgetModalOpen(true)}
-              title="Budget Settings"
-            >
+            <Button variant="ghost" size="icon">
               <Settings className="w-5 h-5" />
             </Button>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => signOut()}
-              title="Sign Out"
-            >
+            <p className="text-xs text-muted-foreground truncate max-w-[180px]">
+              {user.email}
+            </p>
+            <Button variant="ghost" size="icon">
               <LogOut className="w-5 h-5" />
             </Button>
           </div>
         </div>
       </header>
+
 
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {loading ? (

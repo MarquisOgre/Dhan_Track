@@ -69,7 +69,7 @@ const Auth = () => {
             />
           </div>
 
-          <h1 className="font-display font-bold text-2xl">ExpenseTracker</h1>
+          {/* <h1 className="font-display font-bold text-2xl">ExpenseTracker</h1> */}
           <p className="text-muted-foreground mt-2">
             {isLogin ? 'Welcome back!' : 'Create your account'}
           </p>
