@@ -238,29 +238,6 @@ export function useSupabaseTransactions() {
     toast.success('Transaction deleted!');
   }, [user]);
 
-  const updateCategoryBudget = useCallback(async (categoryId: string, budget: number | null) => {
-    if (!user) return;
-
-    const { error } = await supabase
-      .from('categories')
-      .update({ budget })
-      .eq('id', categoryId)
-      .eq('user_id', user.id);
-
-    if (error) {
-      console.error('Error updating budget:', error);
-      toast.error('Failed to update budget');
-      return;
-    }
-
-    setCategories(prev => prev.map(c => {
-      if (c.id === categoryId) {
-        return { ...c, budget: budget || undefined };
-      }
-      return c;
-    }));
-    toast.success('Budget updated!');
-  }, [user]);
 
   const filteredTransactions = useMemo(() => {
     if (filterPeriod === 'all') return transactions;
@@ -302,26 +279,6 @@ export function useSupabaseTransactions() {
     return Object.values(categoryTotals).sort((a, b) => b.total - a.total);
   }, [filteredTransactions]);
 
-  const budgetProgress = useMemo(() => {
-    return categories
-      .filter(c => c.budget && c.budget > 0)
-      .map(category => {
-        const spent = filteredTransactions
-          .filter(t => t.type === 'expense' && t.category.id === category.id)
-          .reduce((sum, t) => sum + t.amount, 0);
-        
-        return {
-          category,
-          spent,
-          budget: category.budget!,
-          percentage: Math.min((spent / category.budget!) * 100, 100),
-          isOverBudget: spent > category.budget!,
-        };
-      })
-      .filter(b => b.spent > 0 || b.budget > 0)
-      .sort((a, b) => b.percentage - a.percentage);
-  }, [filteredTransactions, categories]);
-
   return {
     transactions: filteredTransactions,
     allTransactions: transactions,
@@ -330,12 +287,10 @@ export function useSupabaseTransactions() {
     addTransaction,
     updateTransaction,
     deleteTransaction,
-    updateCategoryBudget,
     totalBalance,
     totalIncome,
     totalExpenses,
     expensesByCategory,
-    budgetProgress,
     filterPeriod,
     setFilterPeriod,
   };

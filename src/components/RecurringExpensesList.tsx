@@ -1,156 +1,189 @@
-import { useMemo } from 'react';
-import { Check, Clock, RefreshCw } from 'lucide-react';
-import { Transaction, RecurrenceType } from '@/hooks/useSupabaseTransactions';
+import { Check, Clock, RefreshCw, Plus, Trash2 } from 'lucide-react';
+import { RecurringExpense } from '@/hooks/useRecurringExpenses';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 type RecurringExpensesListProps = {
-  transactions: Transaction[];
+  recurringExpenses: RecurringExpense[];
   currentMonth: number;
   currentYear: number;
+  onCreateClick: () => void;
+  onMarkAsPaid: (id: string) => void;
+  onMarkAsUnpaid: (id: string) => void;
+  onDelete: (id: string) => void;
 };
 
-type RecurringItem = {
-  id: string;
-  description: string;
-  amount: number;
-  category: Transaction['category'];
-  recurrence: RecurrenceType;
-  isPaid: boolean;
-  paidDate?: Date;
-};
-
-const recurrenceLabels: Record<RecurrenceType, string> = {
-  'one-time': 'One-time',
+const recurrenceLabels: Record<string, string> = {
   'daily': 'Daily',
   'weekly': 'Weekly',
   'monthly': 'Monthly',
   'yearly': 'Yearly',
 };
 
+const monthNames = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+];
+
 export function RecurringExpensesList({ 
-  transactions, 
-  currentMonth, 
-  currentYear 
+  recurringExpenses,
+  currentMonth,
+  currentYear,
+  onCreateClick,
+  onMarkAsPaid,
+  onMarkAsUnpaid,
+  onDelete,
 }: RecurringExpensesListProps) {
-  const recurringItems = useMemo(() => {
-    // Get all recurring expense transactions (not one-time)
-    const recurringExpenses = transactions.filter(
-      t => t.type === 'expense' && t.recurrence !== 'one-time'
-    );
-
-    // Group by description + category to find unique recurring items
-    const uniqueRecurring = new Map<string, RecurringItem>();
-
-    recurringExpenses.forEach(t => {
-      const key = `${t.description}-${t.category.id}-${t.recurrence}`;
-      const transactionMonth = t.date.getMonth();
-      const transactionYear = t.date.getFullYear();
-      const isPaidThisMonth = transactionMonth === currentMonth && transactionYear === currentYear;
-
-      if (!uniqueRecurring.has(key)) {
-        uniqueRecurring.set(key, {
-          id: t.id,
-          description: t.description,
-          amount: t.amount,
-          category: t.category,
-          recurrence: t.recurrence,
-          isPaid: isPaidThisMonth,
-          paidDate: isPaidThisMonth ? t.date : undefined,
-        });
-      } else if (isPaidThisMonth) {
-        // Update if we found a paid instance for this month
-        const existing = uniqueRecurring.get(key)!;
-        uniqueRecurring.set(key, {
-          ...existing,
-          isPaid: true,
-          paidDate: t.date,
-        });
-      }
-    });
-
-    return Array.from(uniqueRecurring.values()).sort((a, b) => {
-      // Unpaid first, then by amount
-      if (a.isPaid !== b.isPaid) return a.isPaid ? 1 : -1;
-      return b.amount - a.amount;
-    });
-  }, [transactions, currentMonth, currentYear]);
-
   const formatCurrency = (amount: number) => {
     return '₹' + amount.toLocaleString('en-IN', { minimumFractionDigits: 0 });
   };
 
-  if (recurringItems.length === 0) {
-    return (
-      <div className="text-center py-6 text-muted-foreground">
-        <RefreshCw className="w-8 h-8 mx-auto mb-2 opacity-50" />
-        <p className="text-sm">No recurring expenses yet</p>
-        <p className="text-xs mt-1">Add transactions with daily, weekly, monthly, or yearly recurrence</p>
-      </div>
-    );
-  }
+  const formatDueDate = (dueDay: number) => {
+    return `${dueDay} ${monthNames[currentMonth]} ${currentYear}`;
+  };
 
-  const paidCount = recurringItems.filter(i => i.isPaid).length;
-  const unpaidCount = recurringItems.length - paidCount;
+  const paidCount = recurringExpenses.filter(e => e.isPaid).length;
+  const unpaidCount = recurringExpenses.length - paidCount;
+
+  const handleTogglePaid = (expense: RecurringExpense) => {
+    if (expense.isPaid) {
+      onMarkAsUnpaid(expense.id);
+    } else {
+      onMarkAsPaid(expense.id);
+    }
+  };
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-3 text-sm">
-        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-          <Check className="w-3 h-3 mr-1" />
-          {paidCount} Paid
-        </Badge>
-        <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">
-          <Clock className="w-3 h-3 mr-1" />
-          {unpaidCount} Unpaid
-        </Badge>
+    <div className="space-y-4">
+      {/* Header with Create Button */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+            <Check className="w-3 h-3 mr-1" />
+            {paidCount} Paid
+          </Badge>
+          <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">
+            <Clock className="w-3 h-3 mr-1" />
+            {unpaidCount} Unpaid
+          </Badge>
+        </div>
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={onCreateClick}
+          className="border-primary text-primary hover:bg-primary/10 border-dashed"
+        >
+          <Plus className="w-4 h-4 mr-1" />
+          Create Recurring Expenses
+        </Button>
       </div>
 
-      <div className="space-y-2">
-        {recurringItems.map((item) => (
-          <div
-            key={item.id}
-            className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
-              item.isPaid 
-                ? 'bg-primary/5 border border-primary/10' 
-                : 'bg-destructive/5 border border-destructive/10'
-            }`}
-          >
-            <div 
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
-              style={{ backgroundColor: item.category.color + '20' }}
+      {/* Expenses List */}
+      {recurringExpenses.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">
+          <RefreshCw className="w-10 h-10 mx-auto mb-3 opacity-50" />
+          <p className="text-sm font-medium">No recurring expenses yet</p>
+          <p className="text-xs mt-1">Click "Create Recurring Expenses" to add one</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {recurringExpenses.map((expense) => (
+            <div
+              key={expense.id}
+              className={`flex items-center gap-3 p-4 rounded-xl transition-all ${
+                expense.isPaid 
+                  ? 'bg-primary/5 border border-primary/10' 
+                  : 'bg-destructive/5 border border-destructive/10'
+              }`}
             >
-              {item.category.icon}
-            </div>
-            
-            <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm truncate">{item.description}</p>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>{item.category.name}</span>
-                <span>•</span>
-                <span className="flex items-center gap-1">
-                  <RefreshCw className="w-3 h-3" />
-                  {recurrenceLabels[item.recurrence]}
+              {/* Category Icon */}
+              <div 
+                className="w-11 h-11 rounded-xl flex items-center justify-center text-lg shrink-0"
+                style={{ backgroundColor: expense.category.color + '20' }}
+              >
+                {expense.category.icon}
+              </div>
+              
+              {/* Details */}
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm truncate">{expense.description}</p>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground mt-0.5">
+                  <span>{expense.category.name}</span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1">
+                    <RefreshCw className="w-3 h-3" />
+                    {recurrenceLabels[expense.recurrence] || expense.recurrence}
+                  </span>
+                  <span>•</span>
+                  <span className="text-foreground/70">Due: {formatDueDate(expense.dueDay)}</span>
+                </div>
+              </div>
+
+              {/* Amount */}
+              <div className="text-right shrink-0">
+                <p className="font-semibold text-sm">{formatCurrency(expense.amount)}</p>
+              </div>
+
+              {/* Paid/Unpaid Toggle */}
+              <div className="flex items-center gap-2 shrink-0">
+                <Switch
+                  checked={expense.isPaid}
+                  onCheckedChange={() => handleTogglePaid(expense)}
+                  className="data-[state=checked]:bg-primary"
+                />
+                <span className={`text-xs font-medium w-12 ${
+                  expense.isPaid ? 'text-primary' : 'text-destructive'
+                }`}>
+                  {expense.isPaid ? 'Paid' : 'Unpaid'}
                 </span>
               </div>
-            </div>
 
-            <div className="text-right">
-              <p className="font-semibold text-sm">{formatCurrency(item.amount)}</p>
-              {item.isPaid ? (
-                <span className="text-xs text-primary flex items-center gap-1 justify-end">
-                  <Check className="w-3 h-3" />
-                  Paid
-                </span>
-              ) : (
-                <span className="text-xs text-destructive flex items-center gap-1 justify-end">
-                  <Clock className="w-3 h-3" />
-                  Unpaid
-                </span>
-              )}
+              {/* Delete Button */}
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Recurring Expense</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete "{expense.description}"? 
+                      {expense.isPaid && " This will also delete the associated transaction."}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={() => onDelete(expense.id)}
+                      className="bg-destructive hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
