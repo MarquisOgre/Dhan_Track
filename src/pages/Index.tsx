@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Wallet, LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSupabaseTransactions, Transaction } from '@/hooks/useSupabaseTransactions';
+import { useRecurringExpenses } from '@/hooks/useRecurringExpenses';
 import { QuickStatsRow } from '@/components/QuickStatsRow';
 import { TransactionListWithEdit } from '@/components/TransactionListWithEdit';
 import { SpendingChart } from '@/components/SpendingChart';
 import { AddTransactionModalSupabase } from '@/components/AddTransactionModalSupabase';
 import { EditTransactionModal } from '@/components/EditTransactionModal';
-import { BudgetSettingsModal } from '@/components/BudgetSettingsModal';
-import { BudgetProgress } from '@/components/BudgetProgress';
+import { CreateRecurringExpenseModal } from '@/components/CreateRecurringExpenseModal';
 import { MonthYearFilter } from '@/components/MonthYearFilter';
 import { ExportButton } from '@/components/ExportButton';
 import { RecurringExpensesList } from '@/components/RecurringExpensesList';
@@ -21,25 +21,30 @@ const Index = () => {
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
   const [editTransaction, setEditTransaction] = useState<Transaction | null>(null);
-  const [budgetModalOpen, setBudgetModalOpen] = useState(false);
+  const [recurringModalOpen, setRecurringModalOpen] = useState(false);
 
   const {
     transactions,
-    allTransactions,
     categories,
     loading,
     addTransaction,
     updateTransaction,
     deleteTransaction,
-    updateCategoryBudget,
     totalBalance,
     totalIncome,
     totalExpenses,
     expensesByCategory,
-    budgetProgress,
     filterPeriod,
     setFilterPeriod,
   } = useSupabaseTransactions();
+
+  const {
+    recurringExpenses,
+    addRecurringExpense,
+    markAsPaid,
+    markAsUnpaid,
+    deleteRecurringExpense,
+  } = useRecurringExpenses(categories);
 
   const currentMonth = filterPeriod === 'all' ? new Date().getMonth() : filterPeriod.month;
   const currentYear = filterPeriod === 'all' ? new Date().getFullYear() : filterPeriod.year;
@@ -49,6 +54,14 @@ const Index = () => {
       navigate('/auth');
     }
   }, [user, authLoading, navigate]);
+
+  const handleMarkAsPaid = async (expenseId: string) => {
+    const transaction = await markAsPaid(expenseId, currentMonth, currentYear);
+    // Refresh transactions list if a transaction was created
+    if (transaction) {
+      // The transactions will be refreshed via the hook's state
+    }
+  };
 
   if (authLoading) {
     return (
@@ -96,13 +109,12 @@ const Index = () => {
             <p className="text-xs text-muted-foreground truncate max-w-[180px]">
               {user.email}
             </p>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" onClick={() => signOut()}>
               <LogOut className="w-5 h-5" />
             </Button>
           </div>
         </div>
       </header>
-
 
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {loading ? (
@@ -128,19 +140,15 @@ const Index = () => {
             <section className="card-elevated p-6 animate-slide-up" style={{ animationDelay: '50ms' }}>
               <h2 className="font-display font-semibold text-lg mb-4">Recurring Expenses</h2>
               <RecurringExpensesList 
-                transactions={allTransactions}
+                recurringExpenses={recurringExpenses}
                 currentMonth={currentMonth}
                 currentYear={currentYear}
+                onCreateClick={() => setRecurringModalOpen(true)}
+                onMarkAsPaid={handleMarkAsPaid}
+                onMarkAsUnpaid={markAsUnpaid}
+                onDelete={deleteRecurringExpense}
               />
             </section>
-
-            {/* Budget Progress */}
-            {budgetProgress.length > 0 && (
-              <section className="card-elevated p-6 animate-slide-up" style={{ animationDelay: '75ms' }}>
-                <h2 className="font-display font-semibold text-lg mb-4">Budget Status</h2>
-                <BudgetProgress data={budgetProgress} />
-              </section>
-            )}
 
             {/* Spending Breakdown */}
             <section className="card-elevated p-6 animate-slide-up" style={{ animationDelay: '100ms' }}>
@@ -185,12 +193,12 @@ const Index = () => {
         onUpdate={updateTransaction}
       />
 
-      {/* Budget Settings Modal */}
-      <BudgetSettingsModal
+      {/* Create Recurring Expense Modal */}
+      <CreateRecurringExpenseModal
         categories={categories}
-        open={budgetModalOpen}
-        onOpenChange={setBudgetModalOpen}
-        onUpdateBudget={updateCategoryBudget}
+        open={recurringModalOpen}
+        onOpenChange={setRecurringModalOpen}
+        onAdd={addRecurringExpense}
       />
     </div>
   );
