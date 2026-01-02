@@ -195,6 +195,39 @@ export function useRecurringExpenses(categories: Category[]) {
     toast.success('Marked as unpaid, transaction deleted');
   }, [user, recurringExpenses]);
 
+  const updateRecurringExpense = useCallback(async (
+    expenseId: string, 
+    updates: Partial<Omit<RecurringExpense, 'id' | 'isPaid' | 'paidTransactionId'>>
+  ) => {
+    if (!user) return;
+
+    const updateData: Record<string, unknown> = {};
+    if (updates.description) updateData.description = updates.description;
+    if (updates.amount !== undefined) updateData.amount = updates.amount;
+    if (updates.category) updateData.category_id = updates.category.id;
+    if (updates.dueDay !== undefined) updateData.due_day = updates.dueDay;
+    if (updates.recurrence) updateData.recurrence = updates.recurrence;
+
+    const { error } = await supabase
+      .from('recurring_expenses')
+      .update(updateData)
+      .eq('id', expenseId)
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error updating recurring expense:', error);
+      toast.error('Failed to update recurring expense');
+      return;
+    }
+
+    setRecurringExpenses(prev => prev.map(e => 
+      e.id === expenseId 
+        ? { ...e, ...updates }
+        : e
+    ).sort((a, b) => a.dueDay - b.dueDay));
+    toast.success('Recurring expense updated!');
+  }, [user]);
+
   const deleteRecurringExpense = useCallback(async (expenseId: string) => {
     if (!user) return;
 
@@ -229,6 +262,7 @@ export function useRecurringExpenses(categories: Category[]) {
     recurringExpenses,
     loading,
     addRecurringExpense,
+    updateRecurringExpense,
     markAsPaid,
     markAsUnpaid,
     deleteRecurringExpense,
