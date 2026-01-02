@@ -1,4 +1,4 @@
-import { Check, Clock, RefreshCw, Plus, Trash2 } from 'lucide-react';
+import { Check, Clock, RefreshCw, Plus, Trash2, Pencil } from 'lucide-react';
 import { RecurringExpense } from '@/hooks/useRecurringExpenses';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,7 @@ type RecurringExpensesListProps = {
   onMarkAsPaid: (id: string) => void;
   onMarkAsUnpaid: (id: string) => void;
   onDelete: (id: string) => void;
+  onEdit: (expense: RecurringExpense) => void;
 };
 
 const recurrenceLabels: Record<string, string> = {
@@ -45,6 +46,7 @@ export function RecurringExpensesList({
   onMarkAsPaid,
   onMarkAsUnpaid,
   onDelete,
+  onEdit,
 }: RecurringExpensesListProps) {
   const formatCurrency = (amount: number) => {
     return '₹' + amount.toLocaleString('en-IN', { minimumFractionDigits: 0 });
@@ -149,6 +151,16 @@ export function RecurringExpensesList({
                   {expense.isPaid ? 'Paid' : 'Unpaid'}
                 </span>
               </div>
+
+              {/* Edit Button */}
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => onEdit(expense)}
+                className="shrink-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
+              >
+                <Pencil className="w-4 h-4" />
+              </Button>
 
               {/* Delete Button */}
               <AlertDialog>

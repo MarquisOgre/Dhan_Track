@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { LogOut, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSupabaseTransactions, Transaction } from '@/hooks/useSupabaseTransactions';
-import { useRecurringExpenses } from '@/hooks/useRecurringExpenses';
+import { useRecurringExpenses, RecurringExpense } from '@/hooks/useRecurringExpenses';
 import { QuickStatsRow } from '@/components/QuickStatsRow';
 import { TransactionListWithEdit } from '@/components/TransactionListWithEdit';
 import { SpendingChart } from '@/components/SpendingChart';
 import { AddTransactionModalSupabase } from '@/components/AddTransactionModalSupabase';
 import { EditTransactionModal } from '@/components/EditTransactionModal';
 import { CreateRecurringExpenseModal } from '@/components/CreateRecurringExpenseModal';
+import { EditRecurringExpenseModal } from '@/components/EditRecurringExpenseModal';
 import { MonthYearFilter } from '@/components/MonthYearFilter';
 import { ExportButton } from '@/components/ExportButton';
 import { RecurringExpensesList } from '@/components/RecurringExpensesList';
@@ -22,6 +23,7 @@ const Index = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editTransaction, setEditTransaction] = useState<Transaction | null>(null);
   const [recurringModalOpen, setRecurringModalOpen] = useState(false);
+  const [editRecurringExpense, setEditRecurringExpense] = useState<RecurringExpense | null>(null);
 
   const {
     transactions,
@@ -36,6 +38,7 @@ const Index = () => {
     expensesByCategory,
     filterPeriod,
     setFilterPeriod,
+    refreshTransactions,
   } = useSupabaseTransactions();
 
   const {
@@ -44,6 +47,7 @@ const Index = () => {
     markAsPaid,
     markAsUnpaid,
     deleteRecurringExpense,
+    updateRecurringExpense,
   } = useRecurringExpenses(categories);
 
   const currentMonth = filterPeriod === 'all' ? new Date().getMonth() : filterPeriod.month;
@@ -57,10 +61,14 @@ const Index = () => {
 
   const handleMarkAsPaid = async (expenseId: string) => {
     const transaction = await markAsPaid(expenseId, currentMonth, currentYear);
-    // Refresh transactions list if a transaction was created
     if (transaction) {
-      // The transactions will be refreshed via the hook's state
+      refreshTransactions();
     }
+  };
+
+  const handleMarkAsUnpaid = async (expenseId: string) => {
+    await markAsUnpaid(expenseId);
+    refreshTransactions();
   };
 
   if (authLoading) {
@@ -145,8 +153,9 @@ const Index = () => {
                 currentYear={currentYear}
                 onCreateClick={() => setRecurringModalOpen(true)}
                 onMarkAsPaid={handleMarkAsPaid}
-                onMarkAsUnpaid={markAsUnpaid}
+                onMarkAsUnpaid={handleMarkAsUnpaid}
                 onDelete={deleteRecurringExpense}
+                onEdit={setEditRecurringExpense}
               />
             </section>
 
@@ -199,6 +208,15 @@ const Index = () => {
         open={recurringModalOpen}
         onOpenChange={setRecurringModalOpen}
         onAdd={addRecurringExpense}
+      />
+
+      {/* Edit Recurring Expense Modal */}
+      <EditRecurringExpenseModal
+        expense={editRecurringExpense}
+        categories={categories}
+        open={!!editRecurringExpense}
+        onOpenChange={(open) => !open && setEditRecurringExpense(null)}
+        onUpdate={updateRecurringExpense}
       />
     </div>
   );

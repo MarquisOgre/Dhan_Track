@@ -116,39 +116,39 @@ export function useSupabaseTransactions() {
   }, [user]);
 
   // Load transactions
-  useEffect(() => {
+  const loadTransactions = useCallback(async () => {
     if (!user || categories.length === 0) return;
+    
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('date', { ascending: false });
 
-    const loadTransactions = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('date', { ascending: false });
-
-      if (error) {
-        console.error('Error loading transactions:', error);
-        toast.error('Failed to load transactions');
-      } else if (data) {
-        setTransactions(data.map(t => {
-          const category = categories.find(c => c.id === t.category_id) || defaultCategories[11];
-          return {
-            id: t.id,
-            type: t.type as TransactionType,
-            amount: Number(t.amount),
-            category,
-            description: t.description,
-            date: new Date(t.date),
-            recurrence: t.recurrence as RecurrenceType,
-          };
-        }));
-      }
-      setLoading(false);
-    };
-
-    loadTransactions();
+    if (error) {
+      console.error('Error loading transactions:', error);
+      toast.error('Failed to load transactions');
+    } else if (data) {
+      setTransactions(data.map(t => {
+        const category = categories.find(c => c.id === t.category_id) || defaultCategories[11];
+        return {
+          id: t.id,
+          type: t.type as TransactionType,
+          amount: Number(t.amount),
+          category,
+          description: t.description,
+          date: new Date(t.date),
+          recurrence: t.recurrence as RecurrenceType,
+        };
+      }));
+    }
+    setLoading(false);
   }, [user, categories]);
+
+  useEffect(() => {
+    loadTransactions();
+  }, [loadTransactions]);
 
   const addTransaction = useCallback(async (transaction: Omit<Transaction, 'id'>) => {
     if (!user) return;
@@ -287,6 +287,7 @@ export function useSupabaseTransactions() {
     addTransaction,
     updateTransaction,
     deleteTransaction,
+    refreshTransactions: loadTransactions,
     totalBalance,
     totalIncome,
     totalExpenses,
