@@ -58,8 +58,12 @@ export function RecurringExpensesList({
     return `${dueDay} ${monthNames[currentMonth]} ${currentYear}`;
   };
 
-  const paidCount = recurringExpenses.filter(e => e.isPaid).length;
-  const unpaidCount = recurringExpenses.length - paidCount;
+  const paidExpenses = recurringExpenses.filter(e => e.isPaid);
+  const unpaidExpenses = recurringExpenses.filter(e => !e.isPaid);
+  const paidCount = paidExpenses.length;
+  const unpaidCount = unpaidExpenses.length;
+  const paidAmount = paidExpenses.reduce((sum, e) => sum + e.amount, 0);
+  const unpaidAmount = unpaidExpenses.reduce((sum, e) => sum + e.amount, 0);
 
   const handleTogglePaid = (expense: RecurringExpense) => {
     if (expense.isPaid) {
@@ -73,7 +77,7 @@ export function RecurringExpensesList({
     <div className="space-y-4">
       {/* Header with Create Button */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
             <Check className="w-3 h-3 mr-1" />
             {paidCount} Paid
@@ -81,6 +85,12 @@ export function RecurringExpensesList({
           <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">
             <Clock className="w-3 h-3 mr-1" />
             {unpaidCount} Unpaid
+          </Badge>
+          <Badge variant="secondary" className="bg-primary/15 text-primary font-semibold">
+            ₹{paidAmount.toLocaleString('en-IN')} Paid
+          </Badge>
+          <Badge variant="secondary" className="bg-destructive/15 text-destructive font-semibold">
+            ₹{unpaidAmount.toLocaleString('en-IN')} Unpaid
           </Badge>
         </div>
         <Button 
