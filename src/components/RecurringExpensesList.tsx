@@ -1,4 +1,4 @@
-import { Check, Clock, RefreshCw, Plus, Trash2, Pencil } from 'lucide-react';
+import { Check, Clock, RefreshCw, Plus, Trash2, Pencil, Copy } from 'lucide-react';
 import { RecurringExpense } from '@/hooks/useRecurringExpenses';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ type RecurringExpensesListProps = {
   onMarkAsUnpaid: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (expense: RecurringExpense) => void;
+  onDuplicate: (id: string) => void;
 };
 
 const recurrenceLabels: Record<string, string> = {
@@ -47,6 +48,7 @@ export function RecurringExpensesList({
   onMarkAsUnpaid,
   onDelete,
   onEdit,
+  onDuplicate,
 }: RecurringExpensesListProps) {
   const formatCurrency = (amount: number) => {
     return '₹' + amount.toLocaleString('en-IN', { minimumFractionDigits: 0 });
@@ -158,8 +160,20 @@ export function RecurringExpensesList({
                 size="icon"
                 onClick={() => onEdit(expense)}
                 className="shrink-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                title="Edit"
               >
                 <Pencil className="w-4 h-4" />
+              </Button>
+
+              {/* Duplicate Button */}
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => onDuplicate(expense.id)}
+                className="shrink-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                title="Duplicate"
+              >
+                <Copy className="w-4 h-4" />
               </Button>
 
               {/* Delete Button */}

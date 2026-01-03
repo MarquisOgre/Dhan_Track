@@ -48,6 +48,7 @@ const Index = () => {
     markAsUnpaid,
     deleteRecurringExpense,
     updateRecurringExpense,
+    duplicateRecurringExpense,
   } = useRecurringExpenses(categories);
 
   const currentMonth = filterPeriod === 'all' ? new Date().getMonth() : filterPeriod.month;
@@ -156,6 +157,7 @@ const Index = () => {
                 onMarkAsUnpaid={handleMarkAsUnpaid}
                 onDelete={deleteRecurringExpense}
                 onEdit={setEditRecurringExpense}
+                onDuplicate={duplicateRecurringExpense}
               />
             </section>
 
