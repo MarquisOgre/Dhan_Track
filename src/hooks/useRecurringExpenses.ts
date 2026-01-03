@@ -104,8 +104,11 @@ export function useRecurringExpenses(categories: Category[]) {
     const expense = recurringExpenses.find(e => e.id === expenseId);
     if (!expense) return;
 
-    // Create transaction for the payment
-    const paymentDate = new Date(currentYear, currentMonth, expense.dueDay);
+    // Create transaction for the payment - format date as YYYY-MM-DD directly to avoid timezone issues
+    const day = Math.min(expense.dueDay, 28); // Ensure valid day for all months
+    const month = String(currentMonth + 1).padStart(2, '0');
+    const dayStr = String(day).padStart(2, '0');
+    const paymentDateStr = `${currentYear}-${month}-${dayStr}`;
     
     const { data: transactionData, error: transactionError } = await supabase
       .from('transactions')
@@ -115,7 +118,7 @@ export function useRecurringExpenses(categories: Category[]) {
         amount: expense.amount,
         category_id: expense.category.id,
         description: expense.description,
-        date: paymentDate.toISOString().split('T')[0],
+        date: paymentDateStr,
         recurrence: expense.recurrence,
       })
       .select()
@@ -258,6 +261,21 @@ export function useRecurringExpenses(categories: Category[]) {
     toast.success('Recurring expense deleted!');
   }, [user, recurringExpenses]);
 
+  const duplicateRecurringExpense = useCallback(async (expenseId: string) => {
+    if (!user) return;
+
+    const expense = recurringExpenses.find(e => e.id === expenseId);
+    if (!expense) return;
+
+    await addRecurringExpense({
+      description: `${expense.description} (Copy)`,
+      amount: expense.amount,
+      category: expense.category,
+      dueDay: expense.dueDay,
+      recurrence: expense.recurrence,
+    });
+  }, [user, recurringExpenses, addRecurringExpense]);
+
   return {
     recurringExpenses,
     loading,
@@ -266,5 +284,6 @@ export function useRecurringExpenses(categories: Category[]) {
     markAsPaid,
     markAsUnpaid,
     deleteRecurringExpense,
+    duplicateRecurringExpense,
   };
 }
