@@ -13,14 +13,16 @@ export type RecurringExpense = {
   recurrence: string;
   isPaid: boolean;
   paidTransactionId?: string;
+  paidForMonth?: number;
+  paidForYear?: number;
 };
 
-export function useRecurringExpenses(categories: Category[]) {
+export function useRecurringExpenses(categories: Category[], currentMonth?: number, currentYear?: number) {
   const { user } = useAuth();
   const [recurringExpenses, setRecurringExpenses] = useState<RecurringExpense[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load recurring expenses
+  // Load recurring expenses and compute isPaid based on current month/year
   useEffect(() => {
     if (!user || categories.length === 0) return;
 
@@ -36,8 +38,16 @@ export function useRecurringExpenses(categories: Category[]) {
         console.error('Error loading recurring expenses:', error);
         toast.error('Failed to load recurring expenses');
       } else if (data) {
+        const viewMonth = currentMonth ?? new Date().getMonth();
+        const viewYear = currentYear ?? new Date().getFullYear();
+        
         setRecurringExpenses(data.map(re => {
           const category = categories.find(c => c.id === re.category_id) || defaultCategories[11];
+          // Check if paid for the current viewing month/year
+          const isPaidForCurrentPeriod = re.is_paid && 
+            re.paid_for_month === viewMonth + 1 && // DB stores 1-indexed month
+            re.paid_for_year === viewYear;
+          
           return {
             id: re.id,
             description: re.description,
@@ -45,8 +55,10 @@ export function useRecurringExpenses(categories: Category[]) {
             category,
             dueDay: re.due_day,
             recurrence: re.recurrence,
-            isPaid: re.is_paid,
-            paidTransactionId: re.paid_transaction_id || undefined,
+            isPaid: isPaidForCurrentPeriod,
+            paidTransactionId: isPaidForCurrentPeriod ? (re.paid_transaction_id || undefined) : undefined,
+            paidForMonth: re.paid_for_month ?? undefined,
+            paidForYear: re.paid_for_year ?? undefined,
           };
         }));
       }
@@ -54,7 +66,7 @@ export function useRecurringExpenses(categories: Category[]) {
     };
 
     loadRecurringExpenses();
-  }, [user, categories]);
+  }, [user, categories, currentMonth, currentYear]);
 
   const addRecurringExpense = useCallback(async (expense: Omit<RecurringExpense, 'id' | 'isPaid' | 'paidTransactionId'>) => {
     if (!user) return;
@@ -130,12 +142,14 @@ export function useRecurringExpenses(categories: Category[]) {
       return;
     }
 
-    // Update recurring expense with paid status and transaction ID
+    // Update recurring expense with paid status, transaction ID, and month/year
     const { error: updateError } = await supabase
       .from('recurring_expenses')
       .update({
         is_paid: true,
         paid_transaction_id: transactionData.id,
+        paid_for_month: currentMonth + 1, // Store 1-indexed month
+        paid_for_year: currentYear,
       })
       .eq('id', expenseId)
       .eq('user_id', user.id);
@@ -148,7 +162,7 @@ export function useRecurringExpenses(categories: Category[]) {
 
     setRecurringExpenses(prev => prev.map(e => 
       e.id === expenseId 
-        ? { ...e, isPaid: true, paidTransactionId: transactionData.id }
+        ? { ...e, isPaid: true, paidTransactionId: transactionData.id, paidForMonth: currentMonth + 1, paidForYear: currentYear }
         : e
     ));
     toast.success('Marked as paid!');
@@ -174,12 +188,14 @@ export function useRecurringExpenses(categories: Category[]) {
       return;
     }
 
-    // Update recurring expense to unpaid
+    // Update recurring expense to unpaid and clear month/year
     const { error: updateError } = await supabase
       .from('recurring_expenses')
       .update({
         is_paid: false,
         paid_transaction_id: null,
+        paid_for_month: null,
+        paid_for_year: null,
       })
       .eq('id', expenseId)
       .eq('user_id', user.id);
@@ -192,7 +208,7 @@ export function useRecurringExpenses(categories: Category[]) {
 
     setRecurringExpenses(prev => prev.map(e => 
       e.id === expenseId 
-        ? { ...e, isPaid: false, paidTransactionId: undefined }
+        ? { ...e, isPaid: false, paidTransactionId: undefined, paidForMonth: undefined, paidForYear: undefined }
         : e
     ));
     toast.success('Marked as unpaid, transaction deleted');

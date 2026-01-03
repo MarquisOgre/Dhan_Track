@@ -41,6 +41,9 @@ const Index = () => {
     refreshTransactions,
   } = useSupabaseTransactions();
 
+  const currentMonth = filterPeriod === 'all' ? new Date().getMonth() : filterPeriod.month;
+  const currentYear = filterPeriod === 'all' ? new Date().getFullYear() : filterPeriod.year;
+
   const {
     recurringExpenses,
     addRecurringExpense,
@@ -49,10 +52,7 @@ const Index = () => {
     deleteRecurringExpense,
     updateRecurringExpense,
     duplicateRecurringExpense,
-  } = useRecurringExpenses(categories);
-
-  const currentMonth = filterPeriod === 'all' ? new Date().getMonth() : filterPeriod.month;
-  const currentYear = filterPeriod === 'all' ? new Date().getFullYear() : filterPeriod.year;
+  } = useRecurringExpenses(categories, currentMonth, currentYear);
 
   useEffect(() => {
     if (!authLoading && !user) {

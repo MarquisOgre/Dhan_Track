@@ -53,6 +53,8 @@ export type Database = {
           due_day: number
           id: string
           is_paid: boolean
+          paid_for_month: number | null
+          paid_for_year: number | null
           paid_transaction_id: string | null
           recurrence: string
           updated_at: string
@@ -66,6 +68,8 @@ export type Database = {
           due_day?: number
           id?: string
           is_paid?: boolean
+          paid_for_month?: number | null
+          paid_for_year?: number | null
           paid_transaction_id?: string | null
           recurrence?: string
           updated_at?: string
@@ -79,6 +83,8 @@ export type Database = {
           due_day?: number
           id?: string
           is_paid?: boolean
+          paid_for_month?: number | null
+          paid_for_year?: number | null
           paid_transaction_id?: string | null
           recurrence?: string
           updated_at?: string
