@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Plus, Wallet } from 'lucide-react';
+import { TrendingUp, TrendingDown, Plus, Wallet, Pencil } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 type QuickStatsRowProps = {
@@ -6,9 +6,10 @@ type QuickStatsRowProps = {
   income: number;
   expenses: number;
   onAddClick: () => void;
+  onEditBalance?: () => void;
 };
 
-export function QuickStatsRow({ balance, income, expenses, onAddClick }: QuickStatsRowProps) {
+export function QuickStatsRow({ balance, income, expenses, onAddClick, onEditBalance }: QuickStatsRowProps) {
   const formatCurrency = (amount: number) => {
     return '₹' + amount.toLocaleString('en-IN', { minimumFractionDigits: 0 });
   };
@@ -16,17 +17,28 @@ export function QuickStatsRow({ balance, income, expenses, onAddClick }: QuickSt
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-fade-in">
       {/* Balance */}
-      <div className="card-elevated p-4 flex flex-col">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Wallet className="w-4 h-4 text-primary" />
-          </div>
-          <span className="text-xs text-muted-foreground font-medium">Balance</span>
-        </div>
-        <p className="text-lg font-bold font-display text-foreground truncate">
-          {formatCurrency(balance)}
-        </p>
-      </div>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={onEditBalance}
+            className="card-elevated p-4 flex flex-col text-left hover:bg-muted/50 transition-colors group relative"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Wallet className="w-4 h-4 text-primary" />
+              </div>
+              <span className="text-xs text-muted-foreground font-medium">Balance</span>
+              <Pencil className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-auto" />
+            </div>
+            <p className="text-lg font-bold font-display text-foreground truncate">
+              {formatCurrency(balance)}
+            </p>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Click to edit balance</p>
+        </TooltipContent>
+      </Tooltip>
 
       {/* Income */}
       <div className="stat-card stat-card-income p-4 flex flex-col">

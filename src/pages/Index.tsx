@@ -9,6 +9,7 @@ import { TransactionListWithEdit } from '@/components/TransactionListWithEdit';
 import { SpendingChart } from '@/components/SpendingChart';
 import { AddTransactionModalSupabase } from '@/components/AddTransactionModalSupabase';
 import { EditTransactionModal } from '@/components/EditTransactionModal';
+import { EditBalanceModal } from '@/components/EditBalanceModal';
 import { CreateRecurringExpenseModal } from '@/components/CreateRecurringExpenseModal';
 import { EditRecurringExpenseModal } from '@/components/EditRecurringExpenseModal';
 import { MonthYearFilter } from '@/components/MonthYearFilter';
@@ -22,6 +23,7 @@ const Index = () => {
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
   const [editTransaction, setEditTransaction] = useState<Transaction | null>(null);
+  const [balanceModalOpen, setBalanceModalOpen] = useState(false);
   const [recurringModalOpen, setRecurringModalOpen] = useState(false);
   const [editRecurringExpense, setEditRecurringExpense] = useState<RecurringExpense | null>(null);
 
@@ -143,6 +145,7 @@ const Index = () => {
               income={totalIncome}
               expenses={totalExpenses}
               onAddClick={() => setModalOpen(true)}
+              onEditBalance={() => setBalanceModalOpen(true)}
             />
 
             {/* Recurring Expenses */}
@@ -219,6 +222,27 @@ const Index = () => {
         open={!!editRecurringExpense}
         onOpenChange={(open) => !open && setEditRecurringExpense(null)}
         onUpdate={updateRecurringExpense}
+      />
+
+      {/* Edit Balance Modal */}
+      <EditBalanceModal
+        currentBalance={totalBalance}
+        open={balanceModalOpen}
+        onOpenChange={setBalanceModalOpen}
+        onAdjust={(newBalance) => {
+          const difference = newBalance - totalBalance;
+          if (difference === 0) return;
+          
+          const adjustmentCategory = categories.find(c => c.name === 'Other') || categories[0];
+          addTransaction({
+            type: difference > 0 ? 'income' : 'expense',
+            amount: Math.abs(difference),
+            category: adjustmentCategory,
+            description: 'Balance Adjustment',
+            date: new Date(),
+            recurrence: 'one-time',
+          });
+        }}
       />
     </div>
   );
