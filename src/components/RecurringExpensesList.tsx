@@ -78,19 +78,13 @@ export function RecurringExpensesList({
       {/* Header with Create Button */}
       <div className="flex items-center justify-between">
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-semibold">
             <Check className="w-3 h-3 mr-1" />
-            {paidCount} Paid
+            {paidCount} Paid ₹{paidAmount.toLocaleString('en-IN')}
           </Badge>
-          <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">
+          <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 font-semibold">
             <Clock className="w-3 h-3 mr-1" />
-            {unpaidCount} Unpaid
-          </Badge>
-          <Badge variant="secondary" className="bg-primary/15 text-primary font-semibold">
-            ₹{paidAmount.toLocaleString('en-IN')} Paid
-          </Badge>
-          <Badge variant="secondary" className="bg-destructive/15 text-destructive font-semibold">
-            ₹{unpaidAmount.toLocaleString('en-IN')} Unpaid
+            {unpaidCount} Unpaid ₹{unpaidAmount.toLocaleString('en-IN')}
           </Badge>
         </div>
         <Button 

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Bell, Shield, Palette, HelpCircle } from 'lucide-react';
+import { ArrowLeft, User, Bell, Shield, Palette, HelpCircle, Key } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -9,13 +10,15 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Footer } from '@/components/Footer';
+import { ChangePasswordModal } from '@/components/ChangePasswordModal';
 
 const Settings = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
+  const { isDark, setIsDark } = useTheme();
   
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -83,6 +86,39 @@ const Settings = () => {
           </CardContent>
         </Card>
 
+        {/* Security Section */}
+        <Card className="card-elevated">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">Security</CardTitle>
+                <CardDescription>Protect your account</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Key className="w-5 h-5 text-muted-foreground" />
+                <div>
+                  <p className="font-medium">Password</p>
+                  <p className="text-sm text-muted-foreground">Change your account password</p>
+                </div>
+              </div>
+              <Button variant="outline" onClick={() => setPasswordModalOpen(true)}>
+                Change
+              </Button>
+            </div>
+            <Separator />
+            <p className="text-sm text-muted-foreground">
+              Your data is secured with industry-standard encryption and Row Level Security policies.
+            </p>
+          </CardContent>
+        </Card>
+
         {/* Notifications Section */}
         <Card className="card-elevated">
           <CardHeader>
@@ -136,30 +172,10 @@ const Settings = () => {
               </Label>
               <Switch
                 id="darkMode"
-                checked={darkMode}
-                onCheckedChange={setDarkMode}
+                checked={isDark}
+                onCheckedChange={setIsDark}
               />
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Security Section */}
-        <Card className="card-elevated">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <CardTitle className="text-lg">Security</CardTitle>
-                <CardDescription>Protect your account</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Your data is secured with industry-standard encryption and Row Level Security policies.
-            </p>
           </CardContent>
         </Card>
 
@@ -188,6 +204,12 @@ const Settings = () => {
       </main>
 
       <Footer />
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal 
+        open={passwordModalOpen} 
+        onOpenChange={setPasswordModalOpen} 
+      />
     </div>
   );
 };
