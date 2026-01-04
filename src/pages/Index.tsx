@@ -15,6 +15,7 @@ import { EditRecurringExpenseModal } from '@/components/EditRecurringExpenseModa
 import { MonthYearFilter } from '@/components/MonthYearFilter';
 import { ExportButton } from '@/components/ExportButton';
 import { RecurringExpensesList } from '@/components/RecurringExpensesList';
+import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -91,7 +92,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-8">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b border-border/50">
         <div className="w-full px-6 py-4 flex items-center justify-between">
@@ -244,6 +245,7 @@ const Index = () => {
           });
         }}
       />
+      <Footer />
     </div>
   );
 };
