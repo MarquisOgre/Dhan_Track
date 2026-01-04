@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings as SettingsIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSupabaseTransactions, Transaction } from '@/hooks/useSupabaseTransactions';
 import { useRecurringExpenses, RecurringExpense } from '@/hooks/useRecurringExpenses';
@@ -115,8 +115,8 @@ const Index = () => {
               filterPeriod={filterPeriod} 
               onFilterChange={setFilterPeriod} 
             />
-            <Button variant="ghost" size="icon">
-              <Settings className="w-5 h-5" />
+            <Button variant="ghost" size="icon" onClick={() => navigate('/settings')}>
+              <SettingsIcon className="w-5 h-5" />
             </Button>
             <p className="text-xs text-muted-foreground truncate max-w-[180px]">
               {user.email}
